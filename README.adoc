@@ -20,6 +20,7 @@ homogenous clusters in different regions.
 * Operation Kubernetes cluster
 ** config file located at ~/.kube/config
 ** deploy the sample deployment `deployment-hello.yaml` from the sample app repo `https://github.com/omarlari/aws-container-sample-app`
+** Kubernetes cluster and CloudFormation template must be in the same region
 
 === Deploy the CloudFormation stack
 
@@ -55,6 +56,11 @@ a| image::./deploy-to-aws.png[link=https://console.aws.amazon.com/cloudformation
 
 === Prepare ec2 instance
 
+Login to EC2 instance:
+
+    ssh -i ~/.ssh/arun-us-east1.pem ec2-user@107.21.75.83
+    sudo yum install git
+
 Clone Repository
 
     git clone https://github.com/omarlari/aws-jenkins-containers.git
@@ -67,16 +73,16 @@ Create directory for jenkins data and kube config
 Build awscli and kubectl images
 
     cd aws-jenkins-containers
-    docker build -f AWSCLI -t awscli .
-    docker build -f KUBECTL -t kubectl .
+    docker build -f dockerfiles/AWSCLI -t awscli .
+    docker build -f dockerfiles/KUBECTL -t kubectl .
 
-SCP Kube credentials to instance
+From your local machine, SCP Kube credentials to the EC2 instance:
 
     scp ~/.kube/config ec2-user@<yourip>:~/.kube
 
-Test awscli and kubectl
+Back in the EC2 instance, test awscli and kubectl
 
-    docker run awscli s3 ls
+    docker run awscli aws s3 ls
     docker run -v /home/ec2-user/.kube:/config/.kube kubectl get nodes
 
 Start Jenkins
@@ -86,18 +92,16 @@ Start Jenkins
 
 === GitHub Preparation
 
-
-
-Setup a Personal Access Token.
+Create a new Personal Access Token at https://github.com/settings/tokens. Alternatively, log into GitHub “User X” account > Settings > Developer Setting > Personal access tokens > Generate new token.
 
 image::github-access-token.png[jenkins]
 
-Log into GitHub “User X” account > Settings > Developer Setting > Personal access tokens > Generate new token. These are the minimum scopes you will need to support the Jenkins Webhook:
+These are the minimum scopes you will need to support the Jenkins Webhook:
 
-* repo
-* admin:org
-* admin:public_key
-* admin:repo_hook
+* `repo`
+* `admin:org`
+* `admin:public_key`
+* `admin:repo_hook`
 
 Copy the personal access token, we will need to copy this over to Jenkins credentials.
 
@@ -127,14 +131,11 @@ image::jenkins-getting-started.png[jenkins]
 
 Retrieve the initial credentials from the jenkins container:
 
-    docker ps
-    docker exec -it <CONTAINER ID> bash
-    cat /var/jenkins_home/secrets/initialAdminPassword
-    exit
+    docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 Go ahead and copy and paste this into Jenkins to start the Jenkins configuration.
 
-On the customize Jenkins screen, select "Install suggested plugins"
+On the customize Jenkins screen, select `Install suggested plugins`
 
 image::jenkins-customize.png[jenkins]
 
@@ -146,7 +147,7 @@ You should be presented with this screen and we can finish the Jenkins configura
 
 image::jenkins-ready.png[jenkins]
 
-Next let's add the ECR plugin. On the left hand screen click 'Manage Jenkins' > 'Manage Plugins', on the 'Available' tab filter for 'Amazon ECR plugin' and install it.
+Next let's add the ECR plugin. On the left hand screen click `Manage Jenkins` > `Manage Plugins`, on the `Available` tab filter for `Amazon ECR plugin` and install it.
 
 This will install the following plugins:
 
@@ -154,14 +155,13 @@ This will install the following plugins:
 * CloudBees Amazon Web Service Credentials Plugin
 * Amazon ECR plugin
 
-Go ahead and click the check-box on the bottom to restart Jenkins and then log back in.
+Click on `Download now and install after restart` button and then `Restart Jenkins when installation is complete and no jobs are running` to restart Jenkins and then log back in.
 
-Next let's configure the credentials for GitHub.  One the left side of the Jenkins home screen click "Credentials" > "Global" > "Add Credentials",
-add a credential with kind of "Secret text" and the "Secret" dialogue box paste in the Personal Access Token that we created in GitHub.
+Next let's configure the credentials for GitHub.  One the left side of the Jenkins home screen click `Credentials` > `(global)` > `Add Credentials`, add a credential with kind of `Secret text` and the `Secret` dialogue box paste in the Personal Access Token that we created in GitHub.
 
 === Configure Jenkins Job
 
-Create a new job, from the home screen "New Item" > "Enter and item name" > "Pipeline" > "OK"
+Create a new job, from the home screen `New Item`. Add a name in `Enter and item name` box. Choose `Pipeline`, `OK`.
 
 In the job configure the following:
 
