@@ -11,14 +11,8 @@ homogenous clusters in different regions.
 
 === Pre-Requisites
 
-* Operational ECS Cluster
-** An ECR Repository named 'hello'
-** An ECS task definition named 'hello-jenkins'
-** An ECS service named 'hello-jenkins'
-*** this should be behind an ALB, listening on the root path on port 80
-
-* Operation Kubernetes cluster
-** config file located at ~/.kube/config
+* Operational Kubernetes cluster
+** config file located at `~/.kube/config`
 ** deploy the sample deployment `deployment-hello.yaml` from the sample app repo `https://github.com/omarlari/aws-container-sample-app`
 ** Kubernetes cluster and CloudFormation template must be in the same region
 
@@ -54,23 +48,23 @@ a| image::./deploy-to-aws.png[link=https://console.aws.amazon.com/cloudformation
 |===
 
 
-=== Prepare ec2 instance
+=== Prepare EC2 instance
 
 Login to EC2 instance:
 
     ssh -i ~/.ssh/arun-us-east1.pem ec2-user@107.21.75.83
     sudo yum install git
 
-Clone Repository
+Clone repository:
 
     git clone https://github.com/omarlari/aws-jenkins-containers.git
 
-Create directory for jenkins data and kube config
+Create directory for jenkins data and kube config:
 
     mkdir ~/jenkins-data
     mkdir ~/.kube
 
-Build awscli and kubectl images
+Build awscli and kubectl images:
 
     cd aws-jenkins-containers
     docker build -f dockerfiles/AWSCLI -t awscli .
@@ -80,12 +74,12 @@ From your local machine, SCP Kube credentials to the EC2 instance:
 
     scp ~/.kube/config ec2-user@<yourip>:~/.kube
 
-Back in the EC2 instance, test awscli and kubectl
+Back in the EC2 instance, test awscli and kubectl Docker containers:
 
     docker run awscli aws s3 ls
     docker run -v /home/ec2-user/.kube:/config/.kube kubectl get nodes
 
-Start Jenkins
+Start Jenkins:
 
     chmod u+x ~/aws-jenkins-containers/start-jenkins.sh
     sudo ~/aws-jenkins-containers/start-jenkins.sh
@@ -171,7 +165,6 @@ In the job configure the following:
 * This project is parameterized
 ** add the following string parameters and values that apply to your environment:
 *** ECR_REPO
-*** ECS_CLUSTER
 *** APP = hello-jenkins
 *** REGION
 * Check GitHub hook trigger for GITScm polling
