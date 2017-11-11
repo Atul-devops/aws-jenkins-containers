@@ -1,13 +1,11 @@
-= Using Jenkins to deploy to multiple container orchestrators
+= Using Jenkins to deploy to Kubernetes
 
 :icons:
 :linkcss:
 :imagesdir: ./images
 :toc:
 
-This reference architecture demonstrates how to leverage a single delivery pipeline to deploy to multiple orchestrators. This example will show how to simultanesouly deploy to both
-ECS and Kubernetes. This demonstration could be used to deploy to hybrid scenario where you have Kubernetes on premises and ECS in the cloud. Alternatively it could also be use to deploy to
-homogenous clusters in different regions.
+This reference architecture demonstrates how to leverage a single delivery pipeline to deploy to Kubernetes. It can also be used to deploy to different Kubernetes clusters in different regions.
 
 === Pre-Requisites
 
