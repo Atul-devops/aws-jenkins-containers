@@ -3,16 +3,16 @@ node {
    stage 'Checkout'
    git 'https://github.com/omarlari/aws-container-sample-app.git'
 
-   stage 'Build Dockerfile'
+   stage 'Build Docker image'
    docker.build('hello')
 
-   stage 'Push to ECR'
+   stage 'Push to registry'
    sh ("eval \$(docker run awscli aws ecr get-login --region ${REGION} --no-include-email | sed 's|https://||')")
    docker.withRegistry('https://${ECR_REPO}') {
        docker.image('hello').push('${BUILD_NUMBER}')
    }
 
-   stage 'update application'
+   stage 'Update application'
 
    kubernetes: { node {
    docker.image('kubectl').inside("--volume=/home/ec2-user/.kube:/config/.kube"){
